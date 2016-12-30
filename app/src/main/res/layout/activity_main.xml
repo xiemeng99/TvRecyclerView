@@ -3,4 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <app.com.tvrecyclerview.TvRecyclerView
+        android:id="@+id/tv_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>
