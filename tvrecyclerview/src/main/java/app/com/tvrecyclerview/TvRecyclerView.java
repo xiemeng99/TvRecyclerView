@@ -35,7 +35,6 @@ public class TvRecyclerView extends RecyclerView {
     public TvRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
-        setFocusable(true);
     }
 
     private void init() {
