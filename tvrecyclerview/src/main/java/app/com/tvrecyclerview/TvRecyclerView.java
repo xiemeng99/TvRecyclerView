@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.FocusFinder;
 import android.view.KeyEvent;
 import android.view.View;
@@ -35,6 +34,7 @@ public class TvRecyclerView extends RecyclerView {
     private int mFocusFrameTop;
     private int mFocusFrameRight;
     private int mFocusFrameBottom;
+
     private boolean mReceivedInvokeKeyDown;
     private View mSelectedItem;
     private OnItemStateListener mItemStateListener;
@@ -64,10 +64,10 @@ public class TvRecyclerView extends RecyclerView {
         mNextFocused = null;
         mInLayout = false;
 
-        mFocusFrameLeft = 32;
-        mFocusFrameTop = 22;
-        mFocusFrameRight = 32;
-        mFocusFrameBottom = 43;
+        mFocusFrameLeft = 25;
+        mFocusFrameTop = 18;
+        mFocusFrameRight = 25;
+        mFocusFrameBottom = 34;
         setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
     }
 
@@ -81,9 +81,10 @@ public class TvRecyclerView extends RecyclerView {
         }
     }
 
-    public void setItemStateListener(OnItemStateListener listener) {
+    public void setOnItemStateListener(OnItemStateListener listener) {
         mItemStateListener = listener;
     }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -116,7 +117,6 @@ public class TvRecyclerView extends RecyclerView {
         super.dispatchDraw(canvas);
         if (mFlyBorderView != null && mFlyBorderView.getTvRecyclerView() != null) {
             mFlyBorderView.invalidate();
-            Log.i(TAG, "dispatchDraw: ==================================");
         }
     }
 
@@ -124,7 +124,7 @@ public class TvRecyclerView extends RecyclerView {
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             int keyCode = event.getKeyCode();
-            if (mNextFocused == null) {
+            if (mSelectedItem == null) {
                 mSelectedItem = getChildAt(mSelectedPosition);
             }
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -187,28 +187,60 @@ public class TvRecyclerView extends RecyclerView {
         if (mScrollerFocusMoveAnim.computeScrollOffset()) {
             if (mIsDrawFocusMoveAnim) {
                 mFocusMoveAnimScale = ((float) (mScrollerFocusMoveAnim.getCurrX())) / 100;
-                Log.i(TAG, "computeScroll: ==================mFocusMoveAnimScale=" + mFocusMoveAnimScale);
             }
             postInvalidate();
         } else {
             if (mIsDrawFocusMoveAnim) {
-                mSelectedItem = mNextFocused;
-                mSelectedPosition = indexOfChild(mSelectedItem);
+                if (mNextFocused != null) {
+                    mSelectedItem = mNextFocused;
+                    mSelectedPosition = indexOfChild(mSelectedItem);
+                }
                 mIsDrawFocusMoveAnim = false;
                 setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 postInvalidate();
+                if (mItemStateListener != null) {
+                    mItemStateListener.onItemViewFocused(mSelectedItem, mSelectedPosition);
+                }
             }
         }
     }
 
     private boolean move() {
-        if (mNextFocused == null) {
+        if (mNextFocused == null || !hasFocus()) {
             return false;
         } else {
-            Log.i(TAG, "move: ========================next view pos===========" + indexOfChild(mNextFocused));
+            boolean isVisible = isVisibleChild(mNextFocused);
+            boolean isHalfVisible  = isHalfVisibleChild(mNextFocused);
+            if (isHalfVisible || !isVisible) {
+                int nextPos = indexOfChild(mNextFocused);
+                if (nextPos >= mSelectedPosition) {
+                    scrollBy(getWidth() / 2, 0);
+                } else {
+                    scrollBy(-getWidth() / 2, 0);
+                }
+            }
             startFocusMoveAnim();
             return true;
         }
+    }
+
+    private boolean isHalfVisibleChild(View child) {
+        if (child != null) {
+            Rect ret = new Rect();
+            boolean isVisible = child.getLocalVisibleRect(ret);
+            if (isVisible && (ret.width() < child.getWidth())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isVisibleChild(View child) {
+        if (child != null) {
+            Rect ret = new Rect();
+            return child.getLocalVisibleRect(ret);
+        }
+        return false;
     }
 
     private void startFocusMoveAnim() {

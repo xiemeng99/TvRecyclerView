@@ -9,8 +9,7 @@ import android.widget.Scroller;
 
 public class FlyBorderView extends View {
 
-    private static final int TRAN_DUR_ANIM = 150;
-    private static final String TAG = "TvRecyclerView";
+    private static final String TAG = "FlyBorderView";
 
     private TvRecyclerView mTvRecyclerView;
     private Scroller mScroller;
@@ -74,12 +73,6 @@ public class FlyBorderView extends View {
 
     public void dismissFocus() {
         mIsDrawGetFocusAnim = false;
-//        if (mTvRecyclerView != null) {
-//            mTvRecyclerView.invalidate();
-//        }
-        //invalidate();
-        mScroller.abortAnimation();
-        mScroller.forceFinished(true);
     }
 
     @Override
@@ -106,7 +99,7 @@ public class FlyBorderView extends View {
         super.dispatchDraw(canvas);
         if (mTvRecyclerView != null && mTvRecyclerView.hasFocus()) {
             drawGetFocusScaleAnim(canvas);
-            //drawFocusMoveAnim(canvas);
+            drawFocusMoveAnim(canvas);
             drawFocus(canvas);
         }
     }
@@ -216,6 +209,7 @@ public class FlyBorderView extends View {
                         (int) (0xFF * animScale), Canvas.ALL_SAVE_FLAG);
                 nextView.draw(canvas);
                 canvas.restore();
+                canvas.restore();
 
                 // draw current item view
                 canvas.save();
@@ -231,12 +225,13 @@ public class FlyBorderView extends View {
                         (int) (0xFF * (1 - animScale)), Canvas.ALL_SAVE_FLAG);
                 curView.draw(canvas);
                 canvas.restore();
+                canvas.restore();
             }
         }
     }
 
     private void drawFocus(Canvas canvas) {
-        if (!mIsDrawGetFocusAnim) {
+        if (!mIsDrawGetFocusAnim && !mTvRecyclerView.mIsDrawFocusMoveAnim) {
             View itemView = mTvRecyclerView.getChildAt(mTvRecyclerView.getSelectedPosition());
             if (itemView != null) {
                 int[] itemLocation = new int[2];
@@ -254,12 +249,14 @@ public class FlyBorderView extends View {
                 int drawHeight = itemHeight + mTopFocusBoundWidth + mBottomFocusBoundWidth;
                 float drawPositionX = itemPositionX - scaleValue * mLeftFocusBoundWidth;
                 float drawPositionY = itemPositionY - scaleValue * mTopFocusBoundWidth;
-                canvas.save();
-                canvas.translate(drawPositionX, drawPositionY);
-                canvas.scale(scaleValue, scaleValue, 0, 0);
-                drawableFocus.setBounds(0, 0, drawWidth, drawHeight);
-                drawableFocus.draw(canvas);
-                canvas.restore();
+                if (drawableFocus != null) {
+                    canvas.save();
+                    canvas.translate(drawPositionX, drawPositionY);
+                    canvas.scale(scaleValue, scaleValue, 0, 0);
+                    drawableFocus.setBounds(0, 0, drawWidth, drawHeight);
+                    drawableFocus.draw(canvas);
+                    canvas.restore();
+                }
 
                 // draw item view
                 canvas.save();

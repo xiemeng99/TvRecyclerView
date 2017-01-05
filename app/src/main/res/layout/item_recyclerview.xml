@@ -3,7 +3,6 @@
     android:id="@+id/fl_main_layout"
     android:layout_width="220dp"
     android:layout_height="120dp"
-    android:clickable="true"
     android:focusable="true"
     android:background="@drawable/rl_shape_corner">
 

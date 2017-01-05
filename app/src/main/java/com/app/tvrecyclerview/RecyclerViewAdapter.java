@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
-    private RecyclerViewStateListener mListener;
 
     RecyclerViewAdapter(Context context) {
         mContext = context;
@@ -36,13 +35,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return ContantUtil.TEST_DATAS.length;
     }
 
-    void setRecyclerViewStateListener(RecyclerViewStateListener listener) {
-        mListener = listener;
-    }
-
-
-    private class RecyclerViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, View.OnFocusChangeListener {
+    private class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         FrameLayout mFrameLayout;
         TextView mName;
@@ -51,28 +44,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             super(itemView);
             mName = (TextView) itemView.findViewById(R.id.tv_item_tip);
             mFrameLayout = (FrameLayout) itemView.findViewById(R.id.fl_main_layout);
-            mFrameLayout.setOnClickListener(this);
-            mFrameLayout.setOnFocusChangeListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (mListener != null) {
-                mListener.onItemClick(v, getAdapterPosition());
+            ViewGroup.LayoutParams params = mFrameLayout.getLayoutParams();
+            if (params != null) {
+                int width = mContext.getResources().getDisplayMetrics().widthPixels;
+                params.width = width / 3;
+                params.height = (int) (200 + Math.random() * 400);
+                mFrameLayout.setLayoutParams(params);
             }
         }
-
-
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-            if (mListener != null) {
-                mListener.onItemFocusChange(v, hasFocus, getAdapterPosition());
-            }
-        }
-    }
-
-    interface RecyclerViewStateListener {
-        void onItemClick(View v, int position);
-        void onItemFocusChange(View v, boolean hasFocus, int position);
     }
 }

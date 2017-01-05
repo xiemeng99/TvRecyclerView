@@ -4,10 +4,10 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
+import android.widget.Toast;
 
 import app.com.tvrecyclerview.TvRecyclerView;
 
@@ -24,10 +24,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
-        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        manager.supportsPredictiveItemAnimations();
-        mTvRecyclerView.setLayoutManager(manager);
+//        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
+//        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+//        manager.supportsPredictiveItemAnimations();
+        mTvRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(3,  StaggeredGridLayoutManager.HORIZONTAL));
         int itemSpace = getResources().
                 getDimensionPixelSize(R.dimen.recyclerView_item_space);
         mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));
@@ -35,6 +35,19 @@ public class MainActivity extends AppCompatActivity {
         mTvRecyclerView.setItemAnimator(animator);
         RecyclerViewAdapter mAdapter = new RecyclerViewAdapter(MainActivity.this);
         mTvRecyclerView.setAdapter(mAdapter);
+
+        mTvRecyclerView.setOnItemStateListener(new TvRecyclerView.OnItemStateListener() {
+            @Override
+            public void onItemViewClick(View view, int position) {
+                Toast.makeText(MainActivity.this,
+                        ContantUtil.TEST_DATAS[position], Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onItemViewFocused(View view, int position) {
+
+            }
+        });
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
