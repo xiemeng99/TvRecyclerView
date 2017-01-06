@@ -70,7 +70,7 @@ public class FocusBorderView extends View {
             if (v != null) {
                 mIsDrawGetFocusAnim = true;
                 mScroller.abortAnimation();
-                mScroller.startScroll(0, 0, 100, 100, 300);
+                mScroller.startScroll(0, 0, 100, 100, 250);
                 invalidate();
             }
         }
@@ -92,7 +92,7 @@ public class FocusBorderView extends View {
             if (v != null) {
                 mIsClicked = true;
                 mScroller.abortAnimation();
-                mScroller.startScroll(0, 0, 100, 100, 225);
+                mScroller.startScroll(0, 0, 100, 100, 200);
                 invalidate();
             }
         }

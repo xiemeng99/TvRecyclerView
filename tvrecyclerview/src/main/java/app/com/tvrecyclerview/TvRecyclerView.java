@@ -210,6 +210,12 @@ public class TvRecyclerView extends RecyclerView {
         if (mNextFocused == null || !hasFocus()) {
             return false;
         } else {
+            if (mIsDrawFocusMoveAnim) {
+                return true;
+            }
+            if (mNextFocused == null) {
+                return false;
+            }
             boolean isVisible = isVisibleChild(mNextFocused);
             boolean isHalfVisible  = isHalfVisibleChild(mNextFocused);
             if (isHalfVisible || !isVisible) {
