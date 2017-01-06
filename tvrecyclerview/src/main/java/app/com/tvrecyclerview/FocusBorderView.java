@@ -4,12 +4,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Scroller;
 
-public class FlyBorderView extends View {
+public class FocusBorderView extends View {
 
-    private static final String TAG = "FlyBorderView";
+    private static final String TAG = "FocusBorderView";
 
     private TvRecyclerView mTvRecyclerView;
     private Scroller mScroller;
@@ -19,16 +20,19 @@ public class FlyBorderView extends View {
 
     private boolean mIsDrawGetFocusAnim;
     private boolean mIsNeedLayerTypeToSoftWare;
+    private boolean mIsClicked;
 
     private int mLeftFocusBoundWidth;
     private int mTopFocusBoundWidth;
     private int mRightFocusBoundWidth;
     private int mBottomFocusBoundWidth;
 
-    public FlyBorderView(Context context) {
+    public FocusBorderView(Context context) {
         super(context);
         mScroller = new Scroller(context);
+
         mIsDrawGetFocusAnim = false;
+        mIsClicked = false;
         mLeftFocusBoundWidth = 0;
         mTopFocusBoundWidth = 0;
         mRightFocusBoundWidth = 0;
@@ -65,6 +69,7 @@ public class FlyBorderView extends View {
 
             if (v != null) {
                 mIsDrawGetFocusAnim = true;
+                mScroller.abortAnimation();
                 mScroller.startScroll(0, 0, 100, 100, 300);
                 invalidate();
             }
@@ -75,16 +80,46 @@ public class FlyBorderView extends View {
         mIsDrawGetFocusAnim = false;
     }
 
+    public void startClickAnim() {
+        if (mTvRecyclerView != null) {
+            mTvRecyclerView.setLayerType(View.LAYER_TYPE_NONE, null);
+            View v = null;
+            int indexChild = mTvRecyclerView.getSelectedPosition();
+            if (indexChild >= 0 && indexChild < mTvRecyclerView.getChildCount()) {
+                v = mTvRecyclerView.getChildAt(indexChild);
+            }
+
+            if (v != null) {
+                mIsClicked = true;
+                mScroller.abortAnimation();
+                mScroller.startScroll(0, 0, 100, 100, 225);
+                invalidate();
+            }
+        }
+    }
+
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
             float scaleValue = mTvRecyclerView.getSelectedScaleValue();
-            mScaleX = ((scaleValue - 1) * mScroller.getCurrX()) / 100 + 1;
-            mScaleY = ((scaleValue - 1) * mScroller.getCurrY()) / 100 + 1;
+            if (mIsDrawGetFocusAnim) { // calculate scale when get focus animation
+                mScaleX = ((scaleValue - 1) * mScroller.getCurrX()) / 100 + 1;
+                mScaleY = ((scaleValue - 1) * mScroller.getCurrY()) / 100 + 1;
+            } else if (mIsClicked) {  // calculate scale when key down animation
+                mScaleX = scaleValue - ((scaleValue - 1) * mScroller.getCurrX()) / 100;
+                mScaleY = scaleValue - ((scaleValue - 1) * mScroller.getCurrY()) / 100;
+            }
             invalidate();
         } else {
             if (mIsDrawGetFocusAnim) {
                 mIsDrawGetFocusAnim = false;
+                if (mTvRecyclerView != null) {
+                    mTvRecyclerView.setLayerType(mIsNeedLayerTypeToSoftWare ?
+                            View.LAYER_TYPE_SOFTWARE : View.LAYER_TYPE_NONE, null);
+                    invalidate();
+                }
+            } else if (mIsClicked) {
+                mIsClicked = false;
                 if (mTvRecyclerView != null) {
                     mTvRecyclerView.setLayerType(mIsNeedLayerTypeToSoftWare ?
                             View.LAYER_TYPE_SOFTWARE : View.LAYER_TYPE_NONE, null);
@@ -98,14 +133,14 @@ public class FlyBorderView extends View {
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
         if (mTvRecyclerView != null && mTvRecyclerView.hasFocus()) {
-            drawGetFocusScaleAnim(canvas);
+            drawGetFocusOrClickScaleAnim(canvas);
             drawFocusMoveAnim(canvas);
             drawFocus(canvas);
         }
     }
 
-    private void drawGetFocusScaleAnim(Canvas canvas) {
-        if (mIsDrawGetFocusAnim) {
+    private void drawGetFocusOrClickScaleAnim(Canvas canvas) {
+        if (mIsDrawGetFocusAnim || mIsClicked) {
             View itemView = null;
             int indexChild = mTvRecyclerView.getSelectedPosition();
             if (indexChild >= 0 && indexChild < mTvRecyclerView.getChildCount()) {
@@ -150,6 +185,7 @@ public class FlyBorderView extends View {
 
     private void drawFocusMoveAnim(Canvas canvas) {
         if (mTvRecyclerView.mIsDrawFocusMoveAnim) {
+            mScroller.abortAnimation();
             View curView = mTvRecyclerView.getChildAt(mTvRecyclerView.getSelectedPosition());
             View nextView = mTvRecyclerView.getNextFocusView();
 
@@ -231,17 +267,19 @@ public class FlyBorderView extends View {
     }
 
     private void drawFocus(Canvas canvas) {
-        if (!mIsDrawGetFocusAnim && !mTvRecyclerView.mIsDrawFocusMoveAnim) {
+        if (!mIsDrawGetFocusAnim && !mTvRecyclerView.mIsDrawFocusMoveAnim && !mIsClicked) {
             View itemView = mTvRecyclerView.getChildAt(mTvRecyclerView.getSelectedPosition());
             if (itemView != null) {
                 int[] itemLocation = new int[2];
                 itemView.getLocationInWindow(itemLocation);
+                Log.i(TAG, "drawFocus: ===itemLocationX===" + itemLocation[0] + "===itemLocationY==" + itemLocation[1]);
 
                 int itemWidth = itemView.getWidth();
                 int itemHeight = itemView.getHeight();
                 float scaleValue = mTvRecyclerView.getSelectedScaleValue();
                 float itemPositionX = itemLocation[0] - (scaleValue - 1) / 2 * itemWidth;
                 float itemPositionY = itemLocation[1] - (scaleValue - 1) / 2 * itemHeight;
+                Log.i(TAG, "drawFocus: ======itemPositionX=====" + itemPositionX + "===itemPositionY===" + itemPositionY);
 
                 //draw focus image
                 Drawable drawableFocus = mTvRecyclerView.getDrawableFocus();
@@ -249,6 +287,8 @@ public class FlyBorderView extends View {
                 int drawHeight = itemHeight + mTopFocusBoundWidth + mBottomFocusBoundWidth;
                 float drawPositionX = itemPositionX - scaleValue * mLeftFocusBoundWidth;
                 float drawPositionY = itemPositionY - scaleValue * mTopFocusBoundWidth;
+                Log.i(TAG, "drawFocus: ===drawPositionX==" + drawPositionX + "===drawPositionY===" + drawPositionY);
+
                 if (drawableFocus != null) {
                     canvas.save();
                     canvas.translate(drawPositionX, drawPositionY);

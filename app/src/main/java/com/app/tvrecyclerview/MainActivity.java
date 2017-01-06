@@ -4,8 +4,9 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,10 +25,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-//        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
-//        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-//        manager.supportsPredictiveItemAnimations();
-        mTvRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(3,  StaggeredGridLayoutManager.HORIZONTAL));
+        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
+        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        manager.supportsPredictiveItemAnimations();
+        mTvRecyclerView.setLayoutManager(manager);
         int itemSpace = getResources().
                 getDimensionPixelSize(R.dimen.recyclerView_item_space);
         mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));

@@ -2,17 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fl_main_layout"
     android:layout_width="220dp"
-    android:layout_height="120dp"
-    android:focusable="true"
-    android:background="@drawable/rl_shape_corner">
+    android:layout_height="110dp"
+    android:background="@drawable/rl_shape_corner"
+    android:focusable="true">
 
     <TextView
         android:id="@+id/tv_item_tip"
         android:layout_width="220dp"
-        android:layout_height="40dp"
+        android:layout_height="30dp"
         android:layout_gravity="bottom"
+        android:background="@drawable/tv_shape_corner"
         android:gravity="center"
         android:textColor="@android:color/white"
-        android:textSize="24sp"
-        android:background="@drawable/tv_shape_corner"/>
+        android:textSize="24sp" />
 </FrameLayout>

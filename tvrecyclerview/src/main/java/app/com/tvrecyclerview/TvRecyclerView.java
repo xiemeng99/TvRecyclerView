@@ -19,7 +19,7 @@ public class TvRecyclerView extends RecyclerView {
 
     public static final String TAG = "TvRecyclerView";
 
-    private FlyBorderView mFlyBorderView;
+    private FocusBorderView mFocusBorderView;
 
     protected Drawable mDrawableFocus;
     public boolean mIsDrawFocusMoveAnim;
@@ -35,8 +35,8 @@ public class TvRecyclerView extends RecyclerView {
     private int mFocusFrameRight;
     private int mFocusFrameBottom;
 
-    private boolean mReceivedInvokeKeyDown;
-    private View mSelectedItem;
+    protected boolean mReceivedInvokeKeyDown;
+    protected View mSelectedItem;
     private OnItemStateListener mItemStateListener;
     private Scroller mScrollerFocusMoveAnim;
 
@@ -72,11 +72,11 @@ public class TvRecyclerView extends RecyclerView {
     }
 
     private void addFlyBorderView(Context context) {
-        if (mFlyBorderView == null) {
-            mFlyBorderView = new FlyBorderView(context);
-            ((Activity) context).getWindow().addContentView(mFlyBorderView,
+        if (mFocusBorderView == null) {
+            mFocusBorderView = new FocusBorderView(context);
+            ((Activity) context).getWindow().addContentView(mFocusBorderView,
                     new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-            mFlyBorderView.setSelectPadding(mFocusFrameLeft, mFocusFrameTop,
+            mFocusBorderView.setSelectPadding(mFocusFrameLeft, mFocusFrameTop,
                     mFocusFrameRight, mFocusFrameBottom);
         }
     }
@@ -94,14 +94,14 @@ public class TvRecyclerView extends RecyclerView {
     @Override
     protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
-        mFlyBorderView.setTvRecyclerView(this);
+        mFocusBorderView.setTvRecyclerView(this);
         if (gainFocus) {
-            mFlyBorderView.bringToFront();
+            mFocusBorderView.bringToFront();
         }
         if (gainFocus && !mInLayout) {
-            mFlyBorderView.startFocusAnim();
+            mFocusBorderView.startFocusAnim();
         } else {
-            mFlyBorderView.dismissFocus();
+            mFocusBorderView.dismissFocus();
         }
     }
 
@@ -115,8 +115,8 @@ public class TvRecyclerView extends RecyclerView {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
-        if (mFlyBorderView != null && mFlyBorderView.getTvRecyclerView() != null) {
-            mFlyBorderView.invalidate();
+        if (mFocusBorderView != null && mFocusBorderView.getTvRecyclerView() != null) {
+            mFocusBorderView.invalidate();
         }
     }
 
@@ -171,6 +171,7 @@ public class TvRecyclerView extends RecyclerView {
                 if (mReceivedInvokeKeyDown) {
                     if ((getAdapter() != null) && (mSelectedItem != null)) {
                         if (mItemStateListener != null) {
+                            mFocusBorderView.startClickAnim();
                             mItemStateListener.onItemViewClick(mSelectedItem, mSelectedPosition);
                         }
                     }
@@ -214,9 +215,9 @@ public class TvRecyclerView extends RecyclerView {
             if (isHalfVisible || !isVisible) {
                 int nextPos = indexOfChild(mNextFocused);
                 if (nextPos >= mSelectedPosition) {
-                    scrollBy(getWidth() / 2, 0);
+                    smoothScrollBy(getWidth() / 2, 0);
                 } else {
-                    scrollBy(-getWidth() / 2, 0);
+                    smoothScrollBy(-getWidth() / 2, 0);
                 }
             }
             startFocusMoveAnim();
@@ -276,8 +277,8 @@ public class TvRecyclerView extends RecyclerView {
         mFocusFrameRight = right;
         mFocusFrameBottom = bottom;
 
-        if (null != mFlyBorderView) {
-            mFlyBorderView.setSelectPadding(mFocusFrameLeft, mFocusFrameTop,
+        if (null != mFocusBorderView) {
+            mFocusBorderView.setSelectPadding(mFocusFrameLeft, mFocusFrameTop,
                     mFocusFrameRight, mFocusFrameBottom);
         }
     }

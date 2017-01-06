@@ -44,13 +44,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             super(itemView);
             mName = (TextView) itemView.findViewById(R.id.tv_item_tip);
             mFrameLayout = (FrameLayout) itemView.findViewById(R.id.fl_main_layout);
-            ViewGroup.LayoutParams params = mFrameLayout.getLayoutParams();
-            if (params != null) {
-                int width = mContext.getResources().getDisplayMetrics().widthPixels;
-                params.width = width / 3;
-                params.height = (int) (200 + Math.random() * 400);
-                mFrameLayout.setLayoutParams(params);
-            }
+//            ViewGroup.LayoutParams params = mFrameLayout.getLayoutParams();
+//            if (params != null) {
+//                int width = mContext.getResources().getDisplayMetrics().widthPixels;
+//                params.width = width / 3;
+//                params.height = (int) (200 + Math.random() * 400);
+//                mFrameLayout.setLayoutParams(params);
+//            }
         }
     }
 }
