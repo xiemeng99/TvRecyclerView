@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 2);
+        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         manager.supportsPredictiveItemAnimations();
         mTvRecyclerView.setLayoutManager(manager);
