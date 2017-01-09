@@ -25,9 +25,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
+        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 2);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         manager.supportsPredictiveItemAnimations();
+        mTvRecyclerView.setLayoutManager(manager);
+
         mTvRecyclerView.setLayoutManager(manager);
         int itemSpace = getResources().
                 getDimensionPixelSize(R.dimen.recyclerView_item_space);

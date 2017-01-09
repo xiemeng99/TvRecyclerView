@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.FocusFinder;
 import android.view.KeyEvent;
 import android.view.View;
@@ -98,9 +99,17 @@ public class TvRecyclerView extends RecyclerView {
         if (gainFocus) {
             mFocusBorderView.bringToFront();
         }
-        if (gainFocus && !mInLayout) {
-            mFocusBorderView.startFocusAnim();
-        } else {
+        if (mSelectedItem != null) {
+            if (gainFocus) {
+                mSelectedItem.setSelected(true);
+            } else {
+                mSelectedItem.setSelected(false);
+            }
+            if (gainFocus && !mInLayout) {
+                mFocusBorderView.startFocusAnim();
+            }
+        }
+        if (!gainFocus) {
             mFocusBorderView.dismissFocus();
         }
     }
@@ -127,14 +136,19 @@ public class TvRecyclerView extends RecyclerView {
             if (mSelectedItem == null) {
                 mSelectedItem = getChildAt(mSelectedPosition);
             }
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_LEFT);
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_RIGHT);
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_UP);
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_DOWN);
+            try {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_LEFT);
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_RIGHT);
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                    mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_UP);
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_DOWN);
+                }
+            } catch (Exception e) {
+                Log.i(TAG, "dispatchKeyEvent: get next focus item error: " + e.getMessage());
+                mNextFocused = null;
             }
         }
         return super.dispatchKeyEvent(event);

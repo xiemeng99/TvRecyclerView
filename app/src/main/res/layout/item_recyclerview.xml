@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fl_main_layout"
-    android:layout_width="220dp"
-    android:layout_height="110dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:background="@drawable/rl_shape_corner"
     android:focusable="true">
 
     <TextView
         android:id="@+id/tv_item_tip"
-        android:layout_width="220dp"
+        android:layout_width="match_parent"
         android:layout_height="30dp"
         android:layout_gravity="bottom"
         android:background="@drawable/tv_shape_corner"

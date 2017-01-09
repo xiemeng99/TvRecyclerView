@@ -1,4 +1,5 @@
 <resources>
-    <dimen name="recyclerView_item_space">25dp</dimen>
+    <dimen name="recyclerView_item_space">20dp</dimen>
     <dimen name="recyclerView_item_radius">7dp</dimen>
+    <dimen name="recyclerview_item_width">110dp</dimen>
 </resources>

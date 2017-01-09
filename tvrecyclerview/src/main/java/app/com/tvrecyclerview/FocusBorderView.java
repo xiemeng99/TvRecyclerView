@@ -166,7 +166,8 @@ public class FocusBorderView extends View {
                 int focusHeight = itemHeight + mTopFocusBoundWidth + mBottomFocusBoundWidth;
 
                 canvas.save();
-                canvas.translate(location[0] - mLeftFocusBoundWidth, location[1] - drawLocation[1] - mTopFocusBoundWidth);
+                canvas.translate(location[0] - mLeftFocusBoundWidth,
+                        location[1] - drawLocation[1] - mTopFocusBoundWidth);
                 canvas.scale(mScaleX, mScaleY, itemWidth / 2, itemHeight / 2);
 
                 drawableFocus.setBounds(0, 0, focusWidth, focusHeight);
