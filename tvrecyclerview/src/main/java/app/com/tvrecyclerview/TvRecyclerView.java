@@ -7,7 +7,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -20,6 +19,7 @@ import android.widget.Scroller;
 public class TvRecyclerView extends RecyclerView {
 
     public static final String TAG = "TvRecyclerView";
+    private static final float DEFAULT_SELECT_SCALE = 1.04f;
 
     private FocusBorderView mFocusBorderView;
 
@@ -44,6 +44,12 @@ public class TvRecyclerView extends RecyclerView {
     private boolean mIsFollowScroll;
 
     private int mScreenWidth;
+    private boolean mIsAutoProcessFocus;
+
+    public enum SCROLL_MODE {
+        SCROLL_NORMAL,
+        SCROLL_FOLLOW
+    }
 
     public TvRecyclerView(Context context) {
         this(context, null);
@@ -87,16 +93,11 @@ public class TvRecyclerView extends RecyclerView {
             setFocusDrawable(drawable);
         }
 
-        mSelectedScaleValue = typeArray.getFloat(R.styleable.TvRecyclerView_focusScale, 1.04f);
-        mFocusMoveAnimScale = typeArray.getFloat(R.styleable.TvRecyclerView_moveScale, 1.0f);
+        mSelectedScaleValue = typeArray.getFloat(R.styleable.TvRecyclerView_focusScale, DEFAULT_SELECT_SCALE);
 
-        boolean isFocus = typeArray.getBoolean(R.styleable.TvRecyclerView_isInterceptFocus, true);
-        if (isFocus && drawable == null) {
-            mDrawableFocus = ContextCompat.getDrawable(getContext(), R.drawable.default_focus);
-        }
-        if (!isFocus) {
+        mIsAutoProcessFocus = typeArray.getBoolean(R.styleable.TvRecyclerView_isAutoProcessFocus, true);
+        if (!mIsAutoProcessFocus) {
             mSelectedScaleValue = 1.0f;
-            mFocusMoveAnimScale = 1.0f;
         }
         typeArray.recycle();
     }
@@ -115,12 +116,29 @@ public class TvRecyclerView extends RecyclerView {
         mItemStateListener = listener;
     }
 
-    public OnItemStateListener getOnItemStateListener() {
-        return mItemStateListener;
+    public void setSelectedScale(float scale) {
+        if (scale >= 1.0f) {
+            mSelectedScaleValue = scale;
+        }
+    }
+
+    public void setIsAutoProcessFocus(boolean isAuto) {
+        mIsAutoProcessFocus = isAuto;
+        if (!isAuto) {
+            mSelectedScaleValue = 1.0f;
+        } else {
+            if (mSelectedScaleValue == 1.0f) {
+                mSelectedScaleValue = DEFAULT_SELECT_SCALE;
+            }
+        }
     }
 
     public void setFocusDrawable(Drawable focusDrawable) {
         mDrawableFocus = focusDrawable;
+    }
+
+    public void setScrollMode(SCROLL_MODE mode) {
+        mIsFollowScroll = mode == SCROLL_MODE.SCROLL_FOLLOW;
     }
 
     /**
@@ -146,18 +164,32 @@ public class TvRecyclerView extends RecyclerView {
                 smoothScrollBy(dx, 0);
             }
         }
-        mFocusBorderView.startFocusAnim();
+        if (mFocusBorderView != null) {
+            mFocusBorderView.startFocusAnim();
+        }
+
+        if (mItemStateListener != null) {
+            mItemStateListener.onItemViewFocusChanged(true, mSelectedItem, mSelectedPosition);
+        }
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        addFlyBorderView(getContext());
+        if (mIsAutoProcessFocus) {
+            addFlyBorderView(getContext());
+        }
     }
 
     @Override
     protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        if (mItemStateListener != null) {
+            if (mSelectedItem == null) {
+                mSelectedItem = getChildAt(mSelectedPosition);
+            }
+            mItemStateListener.onItemViewFocusChanged(gainFocus, mSelectedItem, mSelectedPosition);
+        }
         if (mFocusBorderView == null) {
             return;
         }
@@ -251,7 +283,9 @@ public class TvRecyclerView extends RecyclerView {
                 if (mReceivedInvokeKeyDown) {
                     if ((getAdapter() != null) && (mSelectedItem != null)) {
                         if (mItemStateListener != null) {
-                            mFocusBorderView.startClickAnim();
+                            if (mFocusBorderView != null){
+                                mFocusBorderView.startClickAnim();
+                            }
                             mItemStateListener.onItemViewClick(mSelectedItem, mSelectedPosition);
                         }
                     }
@@ -280,7 +314,7 @@ public class TvRecyclerView extends RecyclerView {
                 setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 postInvalidate();
                 if (mItemStateListener != null) {
-                    mItemStateListener.onItemViewFocused(mSelectedItem, mSelectedPosition);
+                    mItemStateListener.onItemViewFocusChanged(true, mSelectedItem, mSelectedPosition);
                 }
             }
         }
@@ -363,10 +397,17 @@ public class TvRecyclerView extends RecyclerView {
     private void startFocusMoveAnim() {
         setLayerType(View.LAYER_TYPE_NONE, null);
         mIsDrawFocusMoveAnim = true;
+        if (mItemStateListener != null) {
+            mItemStateListener.onItemViewFocusChanged(false, mSelectedItem, mSelectedPosition);
+        }
         mScrollerFocusMoveAnim.startScroll(0, 0, 100, 100, 200);
         invalidate();
     }
 
+    /**
+     * When the TvRecyclerView width is determined, the returned position is correct
+     * @return selected view position
+     */
     public int getSelectedPosition() {
         return mSelectedPosition;
     }
@@ -393,7 +434,7 @@ public class TvRecyclerView extends RecyclerView {
         mFocusFrameRight = right;
         mFocusFrameBottom = bottom;
 
-        if (null != mFocusBorderView) {
+        if (mFocusBorderView != null) {
             mFocusBorderView.setSelectPadding(mFocusFrameLeft, mFocusFrameTop,
                     mFocusFrameRight, mFocusFrameBottom);
         }
@@ -401,6 +442,6 @@ public class TvRecyclerView extends RecyclerView {
 
     public interface OnItemStateListener {
         void onItemViewClick(View view, int position);
-        void onItemViewFocused(View view, int position);
+        void onItemViewFocusChanged(boolean gainFocus, View view, int position);
     }
 }

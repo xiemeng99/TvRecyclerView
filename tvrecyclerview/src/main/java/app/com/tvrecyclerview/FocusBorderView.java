@@ -48,8 +48,10 @@ public class FocusBorderView extends View {
     }
 
     public void setTvRecyclerView(TvRecyclerView tvRecyclerView) {
-        mTvRecyclerView = tvRecyclerView;
-        mIsNeedLayerTypeToSoftWare = mTvRecyclerView.getLayerType() == View.LAYER_TYPE_SOFTWARE;
+        if (mTvRecyclerView == null) {
+            mTvRecyclerView = tvRecyclerView;
+            mIsNeedLayerTypeToSoftWare = mTvRecyclerView.getLayerType() == View.LAYER_TYPE_SOFTWARE;
+        }
     }
 
     public void setSelectPadding(int left, int top, int right, int bottom) {
@@ -71,7 +73,7 @@ public class FocusBorderView extends View {
             if (v != null) {
                 mIsDrawGetFocusAnim = true;
                 mScroller.abortAnimation();
-                mScroller.startScroll(0, 0, 100, 100, 250);
+                mScroller.startScroll(0, 0, 100, 100, 245);
                 invalidate();
             }
         }
@@ -118,11 +120,6 @@ public class FocusBorderView extends View {
                     mTvRecyclerView.setLayerType(mIsNeedLayerTypeToSoftWare ?
                             View.LAYER_TYPE_SOFTWARE : View.LAYER_TYPE_NONE, null);
                     invalidate();
-                    if (mTvRecyclerView.getOnItemStateListener() != null) {
-                        int selectedPosition = mTvRecyclerView.getSelectedPosition();
-                        mTvRecyclerView.getOnItemStateListener().onItemViewFocused(
-                                mTvRecyclerView.getChildAt(selectedPosition), selectedPosition);
-                    }
                 }
             } else if (mIsClicked) {
                 mIsClicked = false;
@@ -236,8 +233,6 @@ public class FocusBorderView extends View {
                             (int) (focusHeight + mBottomFocusBoundWidth));
                     drawableFocus.draw(canvas);
                     canvas.restore();
-                } else {
-                    return;
                 }
 
                 // draw next item view
@@ -250,7 +245,7 @@ public class FocusBorderView extends View {
                         (scaleValue * focusHeight) / nextHeight,
                         0,
                         0);
-                canvas.saveLayerAlpha(new RectF(0, 0, this.getWidth(), this.getHeight()),
+                canvas.saveLayerAlpha(new RectF(0, 0, getWidth(), getHeight()),
                         (int) (0xFF * animScale), Canvas.ALL_SAVE_FLAG);
                 nextView.draw(canvas);
                 canvas.restore();
@@ -266,7 +261,7 @@ public class FocusBorderView extends View {
                         (scaleValue * focusHeight) / curHeight,
                         0,
                         0);
-                canvas.saveLayerAlpha(new RectF(0, 0, this.getWidth(), this.getHeight()),
+                canvas.saveLayerAlpha(new RectF(0, 0, getWidth(), getHeight()),
                         (int) (0xFF * (1 - animScale)), Canvas.ALL_SAVE_FLAG);
                 curView.draw(canvas);
                 canvas.restore();

@@ -9,9 +9,8 @@
     <declare-styleable name="TvRecyclerView">
         <attr name="scrollMode"/>
         <attr name="focusDrawable" format="reference" />
-        <attr name="isInterceptFocus" format="boolean" />
+        <attr name="isAutoProcessFocus" format="boolean" />
         <attr name="focusScale" format="float" />
-        <attr name="moveScale" format="float" />
     </declare-styleable>
 
 </resources>

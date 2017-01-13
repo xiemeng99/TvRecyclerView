@@ -1,71 +1,43 @@
 package com.app.tvrecyclerview;
 
-import android.graphics.Rect;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Toast;
-
-import app.com.tvrecyclerview.TvRecyclerView;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
-
-    private TvRecyclerView mTvRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mTvRecyclerView = (TvRecyclerView) findViewById(R.id.tv_recycler_view);
-        init();
-    }
 
-    private void init() {
-        GridLayoutManager manager = new GridLayoutManager(MainActivity.this, 3);
-        manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        manager.supportsPredictiveItemAnimations();
-        mTvRecyclerView.setLayoutManager(manager);
-
-        mTvRecyclerView.setLayoutManager(manager);
-        int itemSpace = getResources().
-                getDimensionPixelSize(R.dimen.recyclerView_item_space);
-        mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));
-        DefaultItemAnimator animator = new DefaultItemAnimator();
-        mTvRecyclerView.setItemAnimator(animator);
-        RecyclerViewAdapter mAdapter = new RecyclerViewAdapter(MainActivity.this);
-        mTvRecyclerView.setAdapter(mAdapter);
-
-        mTvRecyclerView.setOnItemStateListener(new TvRecyclerView.OnItemStateListener() {
+        Button btnNormal = (Button) findViewById(R.id.btn_normal);
+        btnNormal.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemViewClick(View view, int position) {
-                Toast.makeText(MainActivity.this,
-                        ContantUtil.TEST_DATAS[position], Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onItemViewFocused(View view, int position) {
-
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, NormalFocusActivity.class);
+                startActivity(intent);
             }
         });
-    }
 
-    private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
+        Button btnAuto = (Button) findViewById(R.id.btn_auto_focus);
+        btnAuto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AutoCarouselActivity.class);
+                startActivity(intent);
+            }
+        });
 
-        private int space;
-
-        SpaceItemDecoration(int space) {
-            this.space = space;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
-                                   RecyclerView.State state) {
-            outRect.left = space;
-            outRect.top = space;
-        }
+        Button btnMaul = (Button) findViewById(R.id.btn_maul_focus);
+        btnMaul.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Intent intent = new Intent(MainActivity.this, NormalFocusActivity.class);
+//                startActivity(intent);
+            }
+        });
     }
 }

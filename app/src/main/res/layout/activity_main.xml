@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#8503a9f4" >
+    android:layout_height="match_parent">
 
-    <app.com.tvrecyclerview.TvRecyclerView
-        android:id="@+id/tv_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="580dp"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_marginRight="30dp"/>
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_normal"
+            android:layout_width="200dp"
+            android:layout_height="80dp"
+            android:textAllCaps="false"
+            android:text="normal focus"/>
+
+        <Button
+            android:id="@+id/btn_auto_focus"
+            android:layout_width="200dp"
+            android:layout_height="80dp"
+            android:textAllCaps="false"
+            android:text="auto process focus"/>
+
+        <Button
+            android:id="@+id/btn_maul_focus"
+            android:layout_width="200dp"
+            android:layout_height="80dp"
+            android:textAllCaps="false"
+            android:text="no focus"/>
+    </LinearLayout>
 
 </RelativeLayout>

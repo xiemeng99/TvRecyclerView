@@ -12,45 +12,45 @@ import android.widget.Toast;
 
 import app.com.tvrecyclerview.TvRecyclerView;
 
-public class CarouselActivity extends AppCompatActivity {
+public class NormalFocusActivity extends AppCompatActivity {
 
     private TvRecyclerView mTvRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_carousel);
+        setContentView(R.layout.activity_normal);
         mTvRecyclerView = (TvRecyclerView) findViewById(R.id.tv_recycler_view);
         init();
     }
 
     private void init() {
-        GridLayoutManager manager = new GridLayoutManager(CarouselActivity.this, 1);
+        GridLayoutManager manager = new GridLayoutManager(NormalFocusActivity.this, 3);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         manager.supportsPredictiveItemAnimations();
         mTvRecyclerView.setLayoutManager(manager);
 
         mTvRecyclerView.setLayoutManager(manager);
         int itemSpace = getResources().
-                getDimensionPixelSize(R.dimen.recyclerView_item_space1);
+                getDimensionPixelSize(R.dimen.recyclerView_item_space);
         mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));
         DefaultItemAnimator animator = new DefaultItemAnimator();
         mTvRecyclerView.setItemAnimator(animator);
-        RecyclerViewAdapter1 mAdapter = new RecyclerViewAdapter1(CarouselActivity.this);
+        RecyclerViewAdapter mAdapter = new RecyclerViewAdapter(NormalFocusActivity.this);
         mTvRecyclerView.setAdapter(mAdapter);
 
         mTvRecyclerView.setOnItemStateListener(new TvRecyclerView.OnItemStateListener() {
             @Override
             public void onItemViewClick(View view, int position) {
-                Toast.makeText(CarouselActivity.this,
+                Toast.makeText(NormalFocusActivity.this,
                         ContantUtil.TEST_DATAS[position], Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onItemViewFocused(View view, int position) {
-                view.animate().scaleX(1.4f).scaleY(1.4f).setDuration(150).start();
+            public void onItemViewFocusChanged(boolean gainFocus, View view, int position) {
             }
         });
+        mTvRecyclerView.setSelectPadding(35, 34, 35, 38);
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
@@ -65,6 +65,7 @@ public class CarouselActivity extends AppCompatActivity {
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
                                    RecyclerView.State state) {
             outRect.left = space;
+            outRect.top = space;
         }
     }
 }
