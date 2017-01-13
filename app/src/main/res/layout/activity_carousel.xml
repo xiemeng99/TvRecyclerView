@@ -2,13 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#8503a9f4" >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#757575">
 
     <app.com.tvrecyclerview.TvRecyclerView
         android:id="@+id/tv_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="580dp"
+        android:layout_height="245dp"
         android:layout_centerInParent="true"
-        android:layout_marginRight="30dp"/>
+        app:isInterceptFocus="false"
+        app:scrollMode="followScroll"/>
 
 </RelativeLayout>

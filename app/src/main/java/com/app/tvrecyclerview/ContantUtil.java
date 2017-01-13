@@ -8,7 +8,8 @@ class ContantUtil {
             R.color.lime, R.color.orange, R.color.pink, R.color.cyan, R.color.deepPurple};
 
     static String[] TEST_DATAS = {"A", "B", "C", "D", "E", "F", "G",
-    "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R"};
+    "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "A", "B", "C", "D", "E", "F", "G",
+            "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R"};
 
     static int getRandColor() {
         Random random = new Random();

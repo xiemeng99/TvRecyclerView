@@ -27,6 +27,7 @@ public class FocusBorderView extends View {
     private int mRightFocusBoundWidth;
     private int mBottomFocusBoundWidth;
 
+
     public FocusBorderView(Context context) {
         super(context);
         mScroller = new Scroller(context);
@@ -117,6 +118,11 @@ public class FocusBorderView extends View {
                     mTvRecyclerView.setLayerType(mIsNeedLayerTypeToSoftWare ?
                             View.LAYER_TYPE_SOFTWARE : View.LAYER_TYPE_NONE, null);
                     invalidate();
+                    if (mTvRecyclerView.getOnItemStateListener() != null) {
+                        int selectedPosition = mTvRecyclerView.getSelectedPosition();
+                        mTvRecyclerView.getOnItemStateListener().onItemViewFocused(
+                                mTvRecyclerView.getChildAt(selectedPosition), selectedPosition);
+                    }
                 }
             } else if (mIsClicked) {
                 mIsClicked = false;
@@ -230,6 +236,8 @@ public class FocusBorderView extends View {
                             (int) (focusHeight + mBottomFocusBoundWidth));
                     drawableFocus.draw(canvas);
                     canvas.restore();
+                } else {
+                    return;
                 }
 
                 // draw next item view
