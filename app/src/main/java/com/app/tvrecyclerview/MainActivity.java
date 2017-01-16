@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
         btnMaul.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, NormalFocusActivity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, maulCarouselActivity.class);
+                startActivity(intent);
             }
         });
     }

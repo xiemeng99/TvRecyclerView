@@ -17,6 +17,7 @@
         </activity>
         <activity android:name=".NormalFocusActivity" />
         <activity android:name=".AutoCarouselActivity" />
+        <activity android:name=".maulCarouselActivity" />
     </application>
 
 </manifest>

@@ -36,7 +36,7 @@ public class NormalFocusActivity extends AppCompatActivity {
         mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));
         DefaultItemAnimator animator = new DefaultItemAnimator();
         mTvRecyclerView.setItemAnimator(animator);
-        RecyclerViewAdapter mAdapter = new RecyclerViewAdapter(NormalFocusActivity.this);
+        NormalAdapter mAdapter = new NormalAdapter(NormalFocusActivity.this);
         mTvRecyclerView.setAdapter(mAdapter);
 
         mTvRecyclerView.setOnItemStateListener(new TvRecyclerView.OnItemStateListener() {

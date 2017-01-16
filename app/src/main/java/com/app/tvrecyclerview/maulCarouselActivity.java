@@ -7,28 +7,25 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import app.com.tvrecyclerview.TvRecyclerView;
 
-public class AutoCarouselActivity extends AppCompatActivity {
-
-    private static final String TAG = "AutoCarouselActivity";
+public class maulCarouselActivity extends AppCompatActivity {
 
     private TvRecyclerView mTvRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_carousel);
+        setContentView(R.layout.activity_mul_carousel);
         mTvRecyclerView = (TvRecyclerView) findViewById(R.id.tv_recycler_view);
         init();
     }
 
     private void init() {
-        GridLayoutManager manager = new GridLayoutManager(AutoCarouselActivity.this, 1);
+        GridLayoutManager manager = new GridLayoutManager(maulCarouselActivity.this, 1);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
         manager.supportsPredictiveItemAnimations();
         mTvRecyclerView.setLayoutManager(manager);
@@ -39,23 +36,16 @@ public class AutoCarouselActivity extends AppCompatActivity {
         mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));
         DefaultItemAnimator animator = new DefaultItemAnimator();
         mTvRecyclerView.setItemAnimator(animator);
-        AutoCarouselAdapter mAdapter = new AutoCarouselAdapter(AutoCarouselActivity.this);
+        final MaulCarouselAdapter mAdapter = new MaulCarouselAdapter(maulCarouselActivity.this);
         mTvRecyclerView.setAdapter(mAdapter);
-
-        mTvRecyclerView.setOnItemStateListener(new TvRecyclerView.OnItemStateListener() {
+        mAdapter.setOnItemStateListener(new MaulCarouselAdapter.OnItemStateListener() {
             @Override
-            public void onItemViewClick(View view, int position) {
-                Toast.makeText(AutoCarouselActivity.this,
-                        ContantUtil.TEST_DATAS[position], Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onItemViewFocusChanged(boolean hasFocus, View view, int position) {
-                Log.i(TAG, "onItemViewFocusChanged: ==position==" + position + "==hasFocus==" + hasFocus);
+            public void onItemClick(View view, int position) {
+                Toast.makeText(maulCarouselActivity.this, ContantUtil.TEST_DATAS[position],
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
-        mTvRecyclerView.setSelectedScale(1.08f);
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {

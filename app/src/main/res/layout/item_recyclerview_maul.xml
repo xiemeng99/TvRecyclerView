@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.app.tvrecyclerview.view.FocusRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fl_main_layout"
+    android:layout_width="@dimen/recyclerview_item_width1"
+    android:layout_height="match_parent"
+    android:background="#424242"
+    android:clipChildren="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/iv_item"
+        android:layout_width="@dimen/recyclerview_item_width1"
+        android:layout_height="210dp"
+        android:layout_gravity="top|center_horizontal"
+        android:scaleType="fitXY"/>
+
+    <TextView
+        android:id="@+id/tv_item_tip"
+        android:layout_width="@dimen/recyclerview_item_width1"
+        android:layout_height="30dp"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="24sp" />
+</com.app.tvrecyclerview.view.FocusRelativeLayout>

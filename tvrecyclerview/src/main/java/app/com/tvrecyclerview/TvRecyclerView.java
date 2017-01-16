@@ -79,7 +79,7 @@ public class TvRecyclerView extends RecyclerView {
         mFocusFrameRight = 22;
         mFocusFrameBottom = 22;
         mScreenWidth = getContext().getResources().getDisplayMetrics().widthPixels;
-        setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        setChildrenDrawingOrderEnabled(true);
     }
 
     private void setAttributeSet(AttributeSet attrs) {
@@ -98,6 +98,8 @@ public class TvRecyclerView extends RecyclerView {
         mIsAutoProcessFocus = typeArray.getBoolean(R.styleable.TvRecyclerView_isAutoProcessFocus, true);
         if (!mIsAutoProcessFocus) {
             mSelectedScaleValue = 1.0f;
+        } else {
+            setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         }
         typeArray.recycle();
     }
@@ -112,6 +114,10 @@ public class TvRecyclerView extends RecyclerView {
         }
     }
 
+    /**
+     * note: if you set the property of isAutoProcessFocus is false, the listener will be invalid
+     * @param listener itemStateListener
+     */
     public void setOnItemStateListener(OnItemStateListener listener) {
         mItemStateListener = listener;
     }
@@ -213,6 +219,25 @@ public class TvRecyclerView extends RecyclerView {
     }
 
     @Override
+    protected int getChildDrawingOrder(int childCount, int i) {
+        int position = mSelectedPosition;
+        if (position < 0) {
+            return i;
+        } else {
+            if (i == childCount - 1) {
+                if (position > i) {
+                    position = i;
+                }
+                return position;
+            }
+            if (i == position) {
+                return childCount - 1;
+            }
+        }
+        return i;
+    }
+
+    @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         mInLayout = true;
         super.onLayout(changed, l, t, r, b);
@@ -248,6 +273,12 @@ public class TvRecyclerView extends RecyclerView {
                 Log.i(TAG, "dispatchKeyEvent: get next focus item error: " + e.getMessage());
                 mNextFocused = null;
             }
+        }
+
+        if (!mIsAutoProcessFocus) {
+            processMoves(event.getKeyCode());
+            mSelectedItem = getFocusedChild();
+            mSelectedPosition = indexOfChild(mSelectedItem);
         }
         return super.dispatchKeyEvent(event);
     }
@@ -355,7 +386,11 @@ public class TvRecyclerView extends RecyclerView {
                     }
                 }
             }
-            startFocusMoveAnim();
+            if (mIsAutoProcessFocus) {
+                startFocusMoveAnim();
+            } else {
+                invalidate();
+            }
             return true;
         }
     }
