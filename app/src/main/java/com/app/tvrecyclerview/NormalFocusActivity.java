@@ -3,7 +3,6 @@ package com.app.tvrecyclerview;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,15 +26,11 @@ public class NormalFocusActivity extends AppCompatActivity {
     private void init() {
         GridLayoutManager manager = new GridLayoutManager(NormalFocusActivity.this, 3);
         manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        manager.supportsPredictiveItemAnimations();
         mTvRecyclerView.setLayoutManager(manager);
 
-        mTvRecyclerView.setLayoutManager(manager);
         int itemSpace = getResources().
                 getDimensionPixelSize(R.dimen.recyclerView_item_space);
         mTvRecyclerView.addItemDecoration(new SpaceItemDecoration(itemSpace));
-        DefaultItemAnimator animator = new DefaultItemAnimator();
-        mTvRecyclerView.setItemAnimator(animator);
         NormalAdapter mAdapter = new NormalAdapter(NormalFocusActivity.this);
         mTvRecyclerView.setAdapter(mAdapter);
 
