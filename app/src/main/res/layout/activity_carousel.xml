@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#757575">
+    android:background="#616161">
 
     <app.com.tvrecyclerview.TvRecyclerView
         android:id="@+id/tv_recycler_view"
