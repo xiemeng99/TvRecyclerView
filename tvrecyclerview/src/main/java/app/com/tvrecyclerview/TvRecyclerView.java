@@ -175,7 +175,8 @@ public class TvRecyclerView extends RecyclerView {
         }
 
         if (mItemStateListener != null) {
-            mItemStateListener.onItemViewFocusChanged(true, mSelectedItem, mSelectedPosition);
+            mItemStateListener.onItemViewFocusChanged(true, mSelectedItem,
+                    getChildAdapterPosition(mSelectedItem));
         }
     }
 
@@ -194,7 +195,8 @@ public class TvRecyclerView extends RecyclerView {
             if (mSelectedItem == null) {
                 mSelectedItem = getChildAt(mSelectedPosition);
             }
-            mItemStateListener.onItemViewFocusChanged(gainFocus, mSelectedItem, mSelectedPosition);
+            mItemStateListener.onItemViewFocusChanged(gainFocus, mSelectedItem,
+                    getChildAdapterPosition(mSelectedItem));
         }
         if (mFocusBorderView == null) {
             return;
@@ -317,7 +319,8 @@ public class TvRecyclerView extends RecyclerView {
                             if (mFocusBorderView != null){
                                 mFocusBorderView.startClickAnim();
                             }
-                            mItemStateListener.onItemViewClick(mSelectedItem, mSelectedPosition);
+                            mItemStateListener.onItemViewClick(mSelectedItem,
+                                    getChildAdapterPosition(mSelectedItem));
                         }
                     }
                 }
@@ -345,7 +348,8 @@ public class TvRecyclerView extends RecyclerView {
                 setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 postInvalidate();
                 if (mItemStateListener != null) {
-                    mItemStateListener.onItemViewFocusChanged(true, mSelectedItem, mSelectedPosition);
+                    mItemStateListener.onItemViewFocusChanged(true, mSelectedItem,
+                            getChildAdapterPosition(mSelectedItem));
                 }
             }
         }
@@ -433,7 +437,8 @@ public class TvRecyclerView extends RecyclerView {
         setLayerType(View.LAYER_TYPE_NONE, null);
         mIsDrawFocusMoveAnim = true;
         if (mItemStateListener != null) {
-            mItemStateListener.onItemViewFocusChanged(false, mSelectedItem, mSelectedPosition);
+            mItemStateListener.onItemViewFocusChanged(false, mSelectedItem,
+                    getChildAdapterPosition(mSelectedItem));
         }
         mScrollerFocusMoveAnim.startScroll(0, 0, 100, 100, 200);
         invalidate();
