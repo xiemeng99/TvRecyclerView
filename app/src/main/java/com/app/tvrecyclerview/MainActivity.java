@@ -31,11 +31,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btnMaul = (Button) findViewById(R.id.btn_maul_focus);
-        btnMaul.setOnClickListener(new View.OnClickListener() {
+        Button btnMaulHorizontal = (Button) findViewById(R.id.btn_maul_focus);
+        btnMaulHorizontal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, maulCarouselActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button btnMaulVertical = (Button) findViewById(R.id.btn_maul_vertical_focus);
+        btnMaulVertical.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, maulVerticalCarouselActivity.class);
                 startActivity(intent);
             }
         });

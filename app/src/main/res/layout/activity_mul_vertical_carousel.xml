@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#616161">
+
+    <app.com.tvrecyclerview.TvRecyclerView
+        android:id="@+id/tv_recycler_view"
+        android:layout_width="@dimen/recyclerview_item_width1"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        app:isAutoProcessFocus="false"
+        app:scrollMode="followScroll"/>
+
+</RelativeLayout>

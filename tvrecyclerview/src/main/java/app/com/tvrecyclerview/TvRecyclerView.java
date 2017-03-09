@@ -7,6 +7,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -44,7 +45,9 @@ public class TvRecyclerView extends RecyclerView {
     private boolean mIsFollowScroll;
 
     private int mScreenWidth;
+    private int mScreenHeight;
     private boolean mIsAutoProcessFocus;
+    private int mOrientation;
 
     public enum SCROLL_MODE {
         SCROLL_NORMAL,
@@ -78,7 +81,9 @@ public class TvRecyclerView extends RecyclerView {
         mFocusFrameTop = 22;
         mFocusFrameRight = 22;
         mFocusFrameBottom = 22;
+        mOrientation = HORIZONTAL;
         mScreenWidth = getContext().getResources().getDisplayMetrics().widthPixels;
+        mScreenHeight = getContext().getResources().getDisplayMetrics().heightPixels;
         setChildrenDrawingOrderEnabled(true);
     }
 
@@ -111,6 +116,15 @@ public class TvRecyclerView extends RecyclerView {
                     new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
             mFocusBorderView.setSelectPadding(mFocusFrameLeft, mFocusFrameTop,
                     mFocusFrameRight, mFocusFrameBottom);
+        }
+    }
+
+    @Override
+    public void setLayoutManager(LayoutManager layoutManager) {
+        super.setLayoutManager(layoutManager);
+        if (layoutManager instanceof LinearLayoutManager) {
+            mOrientation = ((LinearLayoutManager)layoutManager).getOrientation();
+            Log.i(TAG, "setLayoutManager: =======orientation==" + mOrientation);
         }
     }
 
@@ -370,23 +384,36 @@ public class TvRecyclerView extends RecyclerView {
                 boolean isVisible = isVisibleChild(mNextFocused);
                 boolean isHalfVisible = isHalfVisibleChild(mNextFocused);
                 if (isHalfVisible || !isVisible) {
-                    if (keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if (keycode == KeyEvent.KEYCODE_DPAD_RIGHT && mOrientation == HORIZONTAL) {
                         smoothScrollBy(getWidth() / 2, 0);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    } else if (keycode == KeyEvent.KEYCODE_DPAD_LEFT && mOrientation == HORIZONTAL) {
                         smoothScrollBy(-getWidth() / 2, 0);
+                    } else if (keycode == KeyEvent.KEYCODE_DPAD_UP && mOrientation == VERTICAL) {
+                        smoothScrollBy(0, -getWidth() / 2);
+                    } else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN && mOrientation == VERTICAL) {
+                        smoothScrollBy(0, getWidth() / 2);
                     }
                 }
             } else {
                 boolean isOver = isOverHalfScreen(mSelectedItem, keycode);
                 if (isOver) {
-                    if (keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                        int dx = mNextFocused.getLeft() +
+                    int dx, dy;
+                    if (keycode == KeyEvent.KEYCODE_DPAD_RIGHT && mOrientation == HORIZONTAL) {
+                        dx = mNextFocused.getLeft() +
                                 mNextFocused.getWidth() / 2 - mScreenWidth / 2;
                         smoothScrollBy(dx, 0);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                        int dx = mNextFocused.getRight() -
+                    } else if (keycode == KeyEvent.KEYCODE_DPAD_LEFT && mOrientation == HORIZONTAL) {
+                        dx = mNextFocused.getRight() -
                                 mNextFocused.getWidth() / 2 - mScreenWidth / 2;
                         smoothScrollBy(dx, 0);
+                    } else if (keycode == KeyEvent.KEYCODE_DPAD_UP && mOrientation == VERTICAL) {
+                        dy = mNextFocused.getBottom() -
+                                mNextFocused.getHeight() / 2 - mScreenHeight / 2;
+                        smoothScrollBy(0, dy);
+                    } else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN && mOrientation == VERTICAL) {
+                        dy = mNextFocused.getTop() +
+                                mNextFocused.getHeight() / 2 - mScreenHeight / 2;
+                        smoothScrollBy(0, dy);
                     }
                 }
             }
@@ -427,6 +454,14 @@ public class TvRecyclerView extends RecyclerView {
             }
         } else if (visibleRect && keycode == KeyEvent.KEYCODE_DPAD_LEFT) {
             if (ret.left < mScreenWidth / 2) {
+                return true;
+            }
+        } else if (visibleRect && keycode == KeyEvent.KEYCODE_DPAD_UP) {
+            if (ret.top < mScreenHeight / 2) {
+                return true;
+            }
+        } else if (visibleRect && keycode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            if (ret.bottom > mScreenHeight / 2) {
                 return true;
             }
         }

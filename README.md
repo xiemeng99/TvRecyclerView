@@ -14,7 +14,7 @@ A custom RecyclerView for Android TV end.
 ```groovy
 dependencies {
     ......
-    compile 'com.henryblue.library:tvrecyclerview:0.9.5'
+    compile 'com.henryblue.library:tvrecyclerview:0.9.6'
    }
 
 ```
