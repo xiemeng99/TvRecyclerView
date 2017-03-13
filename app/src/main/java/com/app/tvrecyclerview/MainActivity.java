@@ -22,6 +22,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button btnModule = (Button) findViewById(R.id.btn_module);
+        btnModule.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ModuleFocusActivity.class);
+                startActivity(intent);
+            }
+        });
+
         Button btnAuto = (Button) findViewById(R.id.btn_auto_focus);
         btnAuto.setOnClickListener(new View.OnClickListener() {
             @Override

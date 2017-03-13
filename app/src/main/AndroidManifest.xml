@@ -16,6 +16,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".NormalFocusActivity" />
+        <activity android:name=".ModuleFocusActivity" />
         <activity android:name=".AutoCarouselActivity" />
         <activity android:name=".maulCarouselActivity" />
         <activity android:name=".maulVerticalCarouselActivity" />
