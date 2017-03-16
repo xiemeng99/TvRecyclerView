@@ -32,7 +32,7 @@ public class ModuleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return 5;
+        return 12;
     }
 
     private class RecyclerViewHolder extends RecyclerView.ViewHolder {
