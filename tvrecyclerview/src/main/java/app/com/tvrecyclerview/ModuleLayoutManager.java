@@ -25,7 +25,7 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
     private final static int LAYOUT_END = 1;
 
     private int mOrientation;
-    private SparseArray<Rect> mItemRects;
+    private SparseArray<Rect> mItemsRect;
 
     private boolean mShouldReverseLayout = false;
     private boolean mReverseLayout = false;
@@ -39,13 +39,14 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
 
     private final int mOriItemWidth;
     private final int mOriItemHeight;
+    private int mTotalWidth;
 
     public ModuleLayoutManager(int rowCount, int orientation) {
         mOrientation = orientation;
         mOriItemWidth = 380;
         mOriItemHeight = 380;
         mNumRows = rowCount;
-        mItemRects = new SparseArray<>();
+        mItemsRect = new SparseArray<>();
     }
 
     @Override
@@ -102,7 +103,8 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
                         leftOffset + getDecoratedMeasurementHorizontal(child),
                         topOffset + getDecoratedMeasurementVertical(child));
 
-                Rect frame = mItemRects.get(i);
+                mTotalWidth = leftOffset + getDecoratedMeasurementHorizontal(child);
+                Rect frame = mItemsRect.get(i);
                 if (frame == null) {
                     frame = new Rect();
                 }
@@ -111,108 +113,108 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
                         leftOffset + getDecoratedMeasurementVertical(child),
                         topOffset + getDecoratedMeasurementVertical(child));
                 // 将当前的Item的Rect边界数据保存
-                mItemRects.put(i, frame);
+                mItemsRect.put(i, frame);
             }
         }
         recycleAndFillItems(recycler, state);
     }
 
-    private int fill(RecyclerView.Recycler recycler, RecyclerView.State state, int dx) {
-        if (getChildCount() > 0) {
-            for (int i = getChildCount() - 1; i >= 0; --i) {
-                View child = getChildAt(i);
-                if (dx > 0) {  //回收左滑越界的view
-                    if (getDecoratedRight(child) - dx < getPaddingLeft()) {
-                        removeAndRecycleView(child, recycler);
-                        mFirstVisitPos++;
-                    }
-                } else if (dx < 0) { //回收右滑越界的view
-                    if (getDecoratedLeft(child) - dx > getWidth() - getPaddingRight()) {
-                        removeAndRecycleView(child, recycler);
-                        mLastVisitPos--;
-                    }
-                }
-            }
-        }
-
-        int leftOffset;
-        int topOffset;
-        // layout children
-        if (dx >= 0) {
-            for (int i = mFirstVisitPos; i < getItemCount(); i++) {
-                View child = recycler.getViewForPosition(i);
-                addView(child);
-                measureChild(child, getItemWidth(i), getItemHeight(i));
-
-                // change leftOffset
-                int itemStartPos = getItemStartIndex(i);
-                int lastPos = itemStartPos / mNumRows;
-                leftOffset = getDecoratedMeasurementHorizontal(child) * lastPos + getPaddingLeft();
-                int topPos = itemStartPos % mNumRows;
-                topOffset = getDecoratedMeasurementVertical(child) * topPos + getPaddingTop();
-
-                //计算宽度 包括margin
-                if (leftOffset <= getHorizontalSpace() &&
-                        topOffset + getDecoratedMeasurementVertical(child) <= getVerticalSpace()) {
-                    layoutDecoratedWithMargins(
-                            child,
-                            leftOffset,
-                            topOffset,
-                            leftOffset + getDecoratedMeasurementHorizontal(child),
-                            topOffset + getDecoratedMeasurementVertical(child));
-
-                    // 保存Rect 供逆序layout用
-                    Rect rect = new Rect(
-                            leftOffset + mHorizontalOffset,
-                            topOffset,
-                            leftOffset + getDecoratedMeasurementVertical(child),
-                            topOffset + getDecoratedMeasurementVertical(child));
-                    mItemRects.put(i, rect);
-                    mLastVisitPos = i;
-                } else if (leftOffset > getHorizontalSpace()) {
-                    break;
-                }
-            }
-            View lastChild = getChildAt(mLastVisitPos);
-            if (mLastVisitPos <= getItemCount() - 1) {
-                int gap = getWidth() - getPaddingRight() - getDecoratedRight(lastChild);
-                if (gap > 0) {
-                    dx -= gap;
-                }
-            }
-        } else {
-            /**
-             * 利用Rect保存子View边界
-             正序排列时，保存每个子View的Rect，逆序时，直接拿出来layout。
-             */
-            int maxPos = getItemCount() - 1;
-            mFirstVisitPos = 0;
-            if (getChildCount() > 0) {
-                View firstView = getChildAt(0);
-                maxPos = getPosition(firstView) - 1;
-            }
-
-            Log.i(TAG, "fill: ====maxPos====" + maxPos);
-            for (int i = maxPos; i >= mFirstVisitPos; --i) {
-                Rect rect = mItemRects.get(i);
-
-                if (rect.right - dx < getPaddingRight()) {
-                    mFirstVisitPos = i + 1;
-                    break;
-                } else {
-                    View child = recycler.getViewForPosition(i);
-                    addView(child, 0);//将View添加至RecyclerView中，childIndex为1，但是View的位置还是由layout的位置决定
-                    measureChild(child, getItemWidth(i), getItemHeight(i));
-                    layoutDecoratedWithMargins(child, rect.left - mHorizontalOffset,
-                            rect.top, rect.right, rect.bottom);
-                }
-            }
-        }
-
-        Log.d("TAG", "count= [" + getChildCount() + "]" + ",[recycler.getScrapList().size():"
-                + recycler.getScrapList().size() + ", dx:" + dx + ", mHorizontalOffset" + mHorizontalOffset + ", ");
-        return dx;
-    }
+//    private int fill(RecyclerView.Recycler recycler, RecyclerView.State state, int dx) {
+//        if (getChildCount() > 0) {
+//            for (int i = getChildCount() - 1; i >= 0; --i) {
+//                View child = getChildAt(i);
+//                if (dx > 0) {  //回收左滑越界的view
+//                    if (getDecoratedRight(child) - dx < getPaddingLeft()) {
+//                        removeAndRecycleView(child, recycler);
+//                        mFirstVisitPos++;
+//                    }
+//                } else if (dx < 0) { //回收右滑越界的view
+//                    if (getDecoratedLeft(child) - dx > getWidth() - getPaddingRight()) {
+//                        removeAndRecycleView(child, recycler);
+//                        mLastVisitPos--;
+//                    }
+//                }
+//            }
+//        }
+//
+//        int leftOffset;
+//        int topOffset;
+//        // layout children
+//        if (dx >= 0) {
+//            for (int i = 0; i < getItemCount(); i++) {
+//                View child = recycler.getViewForPosition(i);
+//                addView(child);
+//                measureChild(child, getItemWidth(i), getItemHeight(i));
+//
+//                // change leftOffset
+//                int itemStartPos = getItemStartIndex(i);
+//                int lastPos = itemStartPos / mNumRows;
+//                leftOffset = getDecoratedMeasurementHorizontal(child) * lastPos + getPaddingLeft();
+//                int topPos = itemStartPos % mNumRows;
+//                topOffset = getDecoratedMeasurementVertical(child) * topPos + getPaddingTop();
+//
+//                //计算宽度 包括margin
+//                if (leftOffset <= getHorizontalSpace() &&
+//                        topOffset + getDecoratedMeasurementVertical(child) <= getVerticalSpace()) {
+//                    layoutDecoratedWithMargins(
+//                            child,
+//                            leftOffset,
+//                            topOffset,
+//                            leftOffset + getDecoratedMeasurementHorizontal(child),
+//                            topOffset + getDecoratedMeasurementVertical(child));
+//
+//                    // 保存Rect 供逆序layout用
+//                    Rect rect = new Rect(
+//                            leftOffset + mHorizontalOffset,
+//                            topOffset,
+//                            leftOffset + getDecoratedMeasurementVertical(child),
+//                            topOffset + getDecoratedMeasurementVertical(child));
+//                    mItemsRect.put(i, rect);
+//                    mLastVisitPos = i;
+//                } else if (leftOffset > getHorizontalSpace()) {
+//                    break;
+//                }
+//            }
+//            View lastChild = getChildAt(mLastVisitPos);
+//            if (mLastVisitPos <= getItemCount() - 1) {
+//                int gap = getWidth() - getPaddingRight() - getDecoratedRight(lastChild);
+//                if (gap > 0) {
+//                    dx -= gap;
+//                }
+//            }
+//        } else {
+//            /**
+//             * 利用Rect保存子View边界
+//             正序排列时，保存每个子View的Rect，逆序时，直接拿出来layout。
+//             */
+//            int maxPos = getItemCount() - 1;
+//            mFirstVisitPos = 0;
+//            if (getChildCount() > 0) {
+//                View firstView = getChildAt(0);
+//                maxPos = getPosition(firstView) - 1;
+//            }
+//
+//            Log.i(TAG, "fill: ====maxPos====" + maxPos);
+//            for (int i = maxPos; i >= mFirstVisitPos; --i) {
+//                Rect rect = mItemsRect.get(i);
+//
+//                if (rect.right - dx < getPaddingRight()) {
+//                    mFirstVisitPos = i + 1;
+//                    break;
+//                } else {
+//                    View child = recycler.getViewForPosition(i);
+//                    addView(child, 0);//将View添加至RecyclerView中，childIndex为1，但是View的位置还是由layout的位置决定
+//                    measureChild(child, getItemWidth(i), getItemHeight(i));
+//                    layoutDecoratedWithMargins(child, rect.left - mHorizontalOffset,
+//                            rect.top, rect.right, rect.bottom);
+//                }
+//            }
+//        }
+//
+//        Log.d("TAG", "count= [" + getChildCount() + "]" + ",[recycler.getScrapList().size():"
+//                + recycler.getScrapList().size() + ", dx:" + dx + ", mHorizontalOffset" + mHorizontalOffset + ", ");
+//        return dx;
+//    }
 
     /**
      * 回收不需要的Item，并且将需要显示的Item从缓存中取出
@@ -247,13 +249,13 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
         //重新显示需要出现在屏幕的子View
         for (int i = 0; i < getItemCount(); i++) {
 
-            if (Rect.intersects(displayFrame, mItemRects.get(i))) {
+            if (Rect.intersects(displayFrame, mItemsRect.get(i))) {
 
                 View scrap = recycler.getViewForPosition(i);
                 measureChild(scrap, getItemWidth(i), getItemHeight(i));
                 addView(scrap);
 
-                Rect frame = mItemRects.get(i);
+                Rect frame = mItemsRect.get(i);
                 layoutDecorated(scrap,
                         frame.left - mHorizontalOffset,
                         frame.top,
@@ -279,29 +281,22 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
 
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        //位移0、没有子View 当然不移动
+        Log.i(TAG, "scrollHorizontallyBy: =====dx===" + dx);
         if (dx == 0 || getChildCount() == 0) {
             return 0;
         }
-        Log.i(TAG, "scrollHorizontallyBy: ===dx==" + dx + "===getChildCount==" + getChildCount());
-        int realOffset = dx; //实际滑动的距离， 可能会在边界处被修复
-        //边界修复代码
-        if (realOffset > 0) {
-            if (mLastVisitPos <= getItemCount() - 1) {
-                View lastChild = getChildAt(mLastVisitPos);
-                int gap = getWidth() - getPaddingRight() - getDecoratedRight(lastChild);
-                if (gap > 0) {
-                    realOffset = -gap;
-                } else if (gap == 0) {
-                    realOffset = 0;
-                } else {
-                    realOffset = Math.min(realOffset, -gap);
-                }
-            }
+        detachAndScrapAttachedViews(recycler);
+        int realOffset = dx;
+        if (mHorizontalOffset + dx < 0) {
+            realOffset -= mHorizontalOffset;
+        } else if (mHorizontalOffset + dx > mTotalWidth - getHorizontalSpace()){
+            realOffset = mTotalWidth - getHorizontalSpace() - mHorizontalOffset;
         }
-        realOffset = fill(recycler, state, realOffset);//先填充，再位移。
-        //mHorizontalOffset += realOffset;//累加实际滑动距离
-        offsetChildrenHorizontal(-realOffset);//滑动
+        Log.i(TAG, "scrollHorizontallyBy: ====realOffset===" + realOffset);
+        mHorizontalOffset += realOffset;
+
+        offsetChildrenHorizontal(realOffset);
+        recycleAndFillItems(recycler, state);
         return realOffset;
     }
 
