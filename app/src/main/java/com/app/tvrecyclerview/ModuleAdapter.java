@@ -12,9 +12,11 @@ import android.widget.TextView;
 
 public class ModuleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
+    private int mItemCount;
 
-    ModuleAdapter(Context context) {
+    ModuleAdapter(Context context, int itemCount) {
         mContext = context;
+        mItemCount = itemCount;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class ModuleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return 12;
+        return mItemCount;
     }
 
     private class RecyclerViewHolder extends RecyclerView.ViewHolder {

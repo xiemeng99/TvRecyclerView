@@ -2,16 +2,14 @@ package app.com.tvrecyclerview;
 
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
 
-public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
+public abstract class ModuleLayoutManager extends RecyclerView.LayoutManager implements
         RecyclerView.SmoothScroller.ScrollVectorProvider {
 
     private static final String TAG = "ModuleLayoutManager";
@@ -27,24 +25,20 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
     private int mOrientation;
     private SparseArray<Rect> mItemsRect;
 
-    private boolean mShouldReverseLayout = false;
-    private boolean mReverseLayout = false;
-
-
-    private int mHorizontalOffset;//竖直偏移量 每次换行时，要根据这个offset判断
-    private int mFirstVisitPos;//屏幕可见的第一个View的Position
-    private int mLastVisitPos;//屏幕可见的最后一个View的Position
+    private int mHorizontalOffset;
 
     private int mNumRows;
 
     private final int mOriItemWidth;
     private final int mOriItemHeight;
     private int mTotalWidth;
+    // re-used variable to acquire decor insets from RecyclerView
+    final Rect mDecorInsets = new Rect();
 
-    public ModuleLayoutManager(int rowCount, int orientation) {
+    public ModuleLayoutManager(int rowCount, int orientation, int baseItemWidth, int baseItemHeight) {
         mOrientation = orientation;
-        mOriItemWidth = 380;
-        mOriItemHeight = 380;
+        mOriItemWidth = baseItemWidth;
+        mOriItemHeight = baseItemHeight;
         mNumRows = rowCount;
         mItemsRect = new SparseArray<>();
     }
@@ -69,13 +63,10 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
         if (getChildCount() == 0 && state.isPreLayout()) {
             return;
         }
-        //onLayoutChildren方法在RecyclerView 初始化时 会执行两遍
+
         detachAndScrapAttachedViews(recycler);
 
         mHorizontalOffset = 0;
-        mFirstVisitPos = 0;
-        mLastVisitPos = getItemCount();
-
         fill(recycler, state);
     }
 
@@ -84,17 +75,26 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
         int topOffset;
         for (int i = 0; i < getItemCount(); i++) {
             View child = recycler.getViewForPosition(i);
+            calculateItemDecorationsForChild(child, mDecorInsets);
             addView(child);
             measureChild(child, getItemWidth(i), getItemHeight(i));
 
             // change leftOffset
             int itemStartPos = getItemStartIndex(i);
             int lastPos = itemStartPos / mNumRows;
-            leftOffset = getDecoratedMeasurementHorizontal(child) * lastPos + getPaddingLeft();
+            if (lastPos == 0) {
+                leftOffset = getDecoratedMeasurementHorizontal(child) * lastPos ;
+            } else {
+                leftOffset = (mOriItemWidth + getChildHorizontalPadding(child)) * lastPos;
+            }
             int topPos = itemStartPos % mNumRows;
-            topOffset = getDecoratedMeasurementVertical(child) * topPos + getPaddingTop();
+            if (topPos == 0) {
+                topOffset = getDecoratedMeasurementVertical(child) * topPos + getPaddingTop();
+            } else {
+                topOffset = getDecoratedMeasurementVertical(child) * topPos;
+            }
 
-            //计算宽度 包括margin
+            //calculate width includes margin
             if (topOffset + getDecoratedMeasurementVertical(child) <= getVerticalSpace()) {
                 layoutDecoratedWithMargins(
                         child,
@@ -102,7 +102,6 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
                         topOffset,
                         leftOffset + getDecoratedMeasurementHorizontal(child),
                         topOffset + getDecoratedMeasurementVertical(child));
-
                 mTotalWidth = leftOffset + getDecoratedMeasurementHorizontal(child);
                 Rect frame = mItemsRect.get(i);
                 if (frame == null) {
@@ -110,127 +109,23 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
                 }
                 frame.set(leftOffset + mHorizontalOffset,
                         topOffset,
-                        leftOffset + getDecoratedMeasurementVertical(child),
+                        leftOffset + getDecoratedMeasurementHorizontal(child),
                         topOffset + getDecoratedMeasurementVertical(child));
-                // 将当前的Item的Rect边界数据保存
+                // Save the current Bound field data for the item view
                 mItemsRect.put(i, frame);
             }
         }
-        recycleAndFillItems(recycler, state);
     }
 
-//    private int fill(RecyclerView.Recycler recycler, RecyclerView.State state, int dx) {
-//        if (getChildCount() > 0) {
-//            for (int i = getChildCount() - 1; i >= 0; --i) {
-//                View child = getChildAt(i);
-//                if (dx > 0) {  //回收左滑越界的view
-//                    if (getDecoratedRight(child) - dx < getPaddingLeft()) {
-//                        removeAndRecycleView(child, recycler);
-//                        mFirstVisitPos++;
-//                    }
-//                } else if (dx < 0) { //回收右滑越界的view
-//                    if (getDecoratedLeft(child) - dx > getWidth() - getPaddingRight()) {
-//                        removeAndRecycleView(child, recycler);
-//                        mLastVisitPos--;
-//                    }
-//                }
-//            }
-//        }
-//
-//        int leftOffset;
-//        int topOffset;
-//        // layout children
-//        if (dx >= 0) {
-//            for (int i = 0; i < getItemCount(); i++) {
-//                View child = recycler.getViewForPosition(i);
-//                addView(child);
-//                measureChild(child, getItemWidth(i), getItemHeight(i));
-//
-//                // change leftOffset
-//                int itemStartPos = getItemStartIndex(i);
-//                int lastPos = itemStartPos / mNumRows;
-//                leftOffset = getDecoratedMeasurementHorizontal(child) * lastPos + getPaddingLeft();
-//                int topPos = itemStartPos % mNumRows;
-//                topOffset = getDecoratedMeasurementVertical(child) * topPos + getPaddingTop();
-//
-//                //计算宽度 包括margin
-//                if (leftOffset <= getHorizontalSpace() &&
-//                        topOffset + getDecoratedMeasurementVertical(child) <= getVerticalSpace()) {
-//                    layoutDecoratedWithMargins(
-//                            child,
-//                            leftOffset,
-//                            topOffset,
-//                            leftOffset + getDecoratedMeasurementHorizontal(child),
-//                            topOffset + getDecoratedMeasurementVertical(child));
-//
-//                    // 保存Rect 供逆序layout用
-//                    Rect rect = new Rect(
-//                            leftOffset + mHorizontalOffset,
-//                            topOffset,
-//                            leftOffset + getDecoratedMeasurementVertical(child),
-//                            topOffset + getDecoratedMeasurementVertical(child));
-//                    mItemsRect.put(i, rect);
-//                    mLastVisitPos = i;
-//                } else if (leftOffset > getHorizontalSpace()) {
-//                    break;
-//                }
-//            }
-//            View lastChild = getChildAt(mLastVisitPos);
-//            if (mLastVisitPos <= getItemCount() - 1) {
-//                int gap = getWidth() - getPaddingRight() - getDecoratedRight(lastChild);
-//                if (gap > 0) {
-//                    dx -= gap;
-//                }
-//            }
-//        } else {
-//            /**
-//             * 利用Rect保存子View边界
-//             正序排列时，保存每个子View的Rect，逆序时，直接拿出来layout。
-//             */
-//            int maxPos = getItemCount() - 1;
-//            mFirstVisitPos = 0;
-//            if (getChildCount() > 0) {
-//                View firstView = getChildAt(0);
-//                maxPos = getPosition(firstView) - 1;
-//            }
-//
-//            Log.i(TAG, "fill: ====maxPos====" + maxPos);
-//            for (int i = maxPos; i >= mFirstVisitPos; --i) {
-//                Rect rect = mItemsRect.get(i);
-//
-//                if (rect.right - dx < getPaddingRight()) {
-//                    mFirstVisitPos = i + 1;
-//                    break;
-//                } else {
-//                    View child = recycler.getViewForPosition(i);
-//                    addView(child, 0);//将View添加至RecyclerView中，childIndex为1，但是View的位置还是由layout的位置决定
-//                    measureChild(child, getItemWidth(i), getItemHeight(i));
-//                    layoutDecoratedWithMargins(child, rect.left - mHorizontalOffset,
-//                            rect.top, rect.right, rect.bottom);
-//                }
-//            }
-//        }
-//
-//        Log.d("TAG", "count= [" + getChildCount() + "]" + ",[recycler.getScrapList().size():"
-//                + recycler.getScrapList().size() + ", dx:" + dx + ", mHorizontalOffset" + mHorizontalOffset + ", ");
-//        return dx;
-//    }
-
-    /**
-     * 回收不需要的Item，并且将需要显示的Item从缓存中取出
-     */
     private void recycleAndFillItems(RecyclerView.Recycler recycler, RecyclerView.State state) {
         if (state.isPreLayout()) {
             return;
         }
 
-        // 当前scroll offset状态下的显示区域
         Rect displayFrame = new Rect(mHorizontalOffset, 0,
-                getHorizontalSpace(), mHorizontalOffset + getVerticalSpace());
+                mHorizontalOffset + getHorizontalSpace(), getVerticalSpace());
 
-        /**
-         * 将滑出屏幕的Items回收到Recycle缓存中
-         */
+        //item view that slide out of the screen will return Recycle cache
         Rect childFrame = new Rect();
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
@@ -238,23 +133,17 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
             childFrame.top = getDecoratedTop(child);
             childFrame.right = getDecoratedRight(child);
             childFrame.bottom = getDecoratedBottom(child);
-            //如果Item没有在显示区域，就说明需要回收
             if (!Rect.intersects(displayFrame, childFrame)) {
-                //回收掉滑出屏幕的View
                 removeAndRecycleView(child, recycler);
-
             }
         }
 
-        //重新显示需要出现在屏幕的子View
+        //Re-display the subview that needs to appear on the screen
         for (int i = 0; i < getItemCount(); i++) {
-
             if (Rect.intersects(displayFrame, mItemsRect.get(i))) {
-
                 View scrap = recycler.getViewForPosition(i);
                 measureChild(scrap, getItemWidth(i), getItemHeight(i));
                 addView(scrap);
-
                 Rect frame = mItemsRect.get(i);
                 layoutDecorated(scrap,
                         frame.left - mHorizontalOffset,
@@ -281,18 +170,17 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
 
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        Log.i(TAG, "scrollHorizontallyBy: =====dx===" + dx);
         if (dx == 0 || getChildCount() == 0) {
             return 0;
         }
         detachAndScrapAttachedViews(recycler);
+
         int realOffset = dx;
         if (mHorizontalOffset + dx < 0) {
             realOffset -= mHorizontalOffset;
         } else if (mHorizontalOffset + dx > mTotalWidth - getHorizontalSpace()){
             realOffset = mTotalWidth - getHorizontalSpace() - mHorizontalOffset;
         }
-        Log.i(TAG, "scrollHorizontallyBy: ====realOffset===" + realOffset);
         mHorizontalOffset += realOffset;
 
         offsetChildrenHorizontal(realOffset);
@@ -301,109 +189,40 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     private int getItemWidth(int position) {
-        return getItemColumnSize(position) * mOriItemWidth;
+        int itemColumnSize = getItemColumnSize(position);
+        return itemColumnSize * mOriItemWidth
+                + (itemColumnSize - 1) * (mDecorInsets.left + mDecorInsets.right);
     }
 
     private int getItemHeight(int position) {
-        return getItemRowSize(position) * mOriItemHeight;
+        int itemRowSize = getItemRowSize(position);
+        return itemRowSize * mOriItemHeight
+                + (itemRowSize - 1) * (mDecorInsets.bottom + mDecorInsets.top);
     }
 
-    private int getItemStartIndex(int position) {
-        if (position == 0) {
-            return 0;
-        }
-        if (position == 1) {
-            return 2;
-        }
-        if (position == 2) {
-            return 3;
-        }
-        if (position == 3) {
-            return 4;
-        }
-        if (position == 4) {
-            return 6;
-        }
-        if (position == 5) {
-            return 8;
-        }
-        if (position == 6) {
-            return 9;
-        }
-        if (position == 7) {
-            return 10;
-        }
-        if (position == 8) {
-            return 12;
-        }
-        if (position == 9) {
-            return 14;
-        }
-        if (position == 10) {
-            return 15;
-        }
-        if (position == 11) {
-            return 16;
-        }
-        return 0;
-    }
+    protected abstract int getItemStartIndex(int position);
 
-    private int getItemRowSize(int position) {
-        if (position == 0) {
-            return 2;
-        }
-        if (position == 1) {
-            return 1;
-        }
-        if (position == 2) {
-            return 1;
-        }
-        if (position == 3) {
-            return 2;
-        }
-        if (position == 4) {
-            return 2;
-        }
-        if (position == 5) {
-            return 1;
-        }
-        if (position == 6) {
-            return 1;
-        }
-        if (position == 7) {
-            return 2;
-        }
-        if (position == 8) {
-            return 2;
-        }
-        if (position == 9) {
-            return 1;
-        }
-        if (position == 10) {
-            return 1;
-        }
-        if (position == 11) {
-            return 2;
-        }
-        return 1;
-    }
+    protected abstract int getItemRowSize(int position);
 
-    private int getItemColumnSize(int position) {
-        return 1;
-    }
+    protected abstract int getItemColumnSize(int position);
 
-    private int getDecoratedMeasurementHorizontal(View view) {
-        final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams)
-                view.getLayoutParams();
-        //Log.i(TAG, "getDecoratedMeasurementHorizontal: ==leftMargin==" + params.leftMargin + "==rightMargin==" + params.rightMargin);
-        return getDecoratedMeasuredWidth(view) + params.leftMargin
+    private int getDecoratedMeasurementHorizontal(View child) {
+        final RecyclerView.MarginLayoutParams params = (RecyclerView.LayoutParams)
+                child.getLayoutParams();
+        return getDecoratedMeasuredWidth(child) + params.leftMargin
                 + params.rightMargin;
     }
 
+    private int getChildHorizontalPadding(View child) {
+        final RecyclerView.MarginLayoutParams params = (RecyclerView.LayoutParams)
+                child.getLayoutParams();
+        return getDecoratedMeasuredWidth(child) + params.leftMargin
+                + params.rightMargin - child.getMeasuredWidth();
+    }
+
     private int getDecoratedMeasurementVertical(View view) {
-        final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams)
+        final RecyclerView.MarginLayoutParams params = (RecyclerView.LayoutParams)
                 view.getLayoutParams();
-        //Log.i(TAG, "getDecoratedMeasurementVertical: ==topMargin==" + params.topMargin + "==bottomMargin==" + params.bottomMargin);
         return getDecoratedMeasuredHeight(view) + params.topMargin
                 + params.bottomMargin;
     }
@@ -428,36 +247,17 @@ public class ModuleLayoutManager extends RecyclerView.LayoutManager implements
         requestLayout();
     }
 
-    public void setReverseLayout(boolean reverseLayout) {
-        assertNotInLayoutOrScroll(null);
-        mReverseLayout = reverseLayout;
-        requestLayout();
-    }
-
-    private void resolveShouldLayoutReverse() {
-        // A == B is the same result, but we rather keep it readable
-        if (mOrientation == VERTICAL || !isLayoutRTL()) {
-            mShouldReverseLayout = mReverseLayout;
-        } else {
-            mShouldReverseLayout = !mReverseLayout;
-        }
-    }
-
     private int getFirstChildPosition() {
         final int childCount = getChildCount();
         return childCount == 0 ? 0 : getPosition(getChildAt(0));
     }
 
-    private boolean isLayoutRTL() {
-        return getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL;
-    }
-
     private int calculateScrollDirectionForPosition(int position) {
         if (getChildCount() == 0) {
-            return mShouldReverseLayout ? LAYOUT_END : LAYOUT_START;
+            return LAYOUT_START;
         }
         final int firstChildPos = getFirstChildPosition();
-        return position < firstChildPos != mShouldReverseLayout ? LAYOUT_START : LAYOUT_END;
+        return position < firstChildPos ? LAYOUT_START : LAYOUT_END;
     }
 
     @Override
