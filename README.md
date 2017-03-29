@@ -1,20 +1,23 @@
 # TvRecyclerView
 A custom RecyclerView for Android TV end.
 
-##ScreenShot
+## ScreenShot
 <p>
 <img src="screenshot1.png" width="75%" />
 <br/>
 <br/>
 <img src="screenshot2.png" width="75%" />
+<br/>
+<br/>
+<img src="screenshot3.png" width="75%" />
 </p>
 
-##Usage
+## Usage
 1.First you can add gradle dependency with command :
 ```groovy
 dependencies {
     ......
-    compile 'com.henryblue.library:tvrecyclerview:0.9.6'
+    compile 'com.henryblue.library:tvrecyclerview:0.9.7'
    }
 
 ```
@@ -80,9 +83,9 @@ To add gradle dependency you need to open build.gradle (in your app folder,not i
 
 ## Public Methods
 
-| Name | Description |
-|:----:|:----:|:-------:|:-----------:|
-|setSelectedScale(float)| change value of focusScale|
+| Name |       Description            |
+|:----:|:---------------:|
+|setSelectedScale(float)| change value of focusScale |
 |setIsAutoProcessFocus(boolean)| sets the focus of the control |
 |setFocusDrawable(Drawable)| sets the focus of the drawable |
 |setItemSelected(int)| sets the position of item gets focus |
@@ -91,7 +94,7 @@ To add gradle dependency you need to open build.gradle (in your app folder,not i
 Note: Because I extended RecyclerView you can use all RecyclerView public methods too.
 
 
-##License
+## License
 ```
 Copyright 2016 henryblue
 
