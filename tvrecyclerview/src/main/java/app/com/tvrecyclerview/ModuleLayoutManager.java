@@ -14,6 +14,8 @@ public abstract class ModuleLayoutManager extends RecyclerView.LayoutManager imp
 
     private static final String TAG = "ModuleLayoutManager";
 
+    private static final int BASE_ITEM_DEFAULT_SIZE = 380;
+
     private static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
 
     private static final int VERTICAL = OrientationHelper.VERTICAL;
@@ -33,7 +35,15 @@ public abstract class ModuleLayoutManager extends RecyclerView.LayoutManager imp
     private final int mOriItemHeight;
     private int mTotalWidth;
     // re-used variable to acquire decor insets from RecyclerView
-    final Rect mDecorInsets = new Rect();
+    private final Rect mDecorInsets = new Rect();
+
+    public ModuleLayoutManager(int rowCount, int orientation) {
+        mOrientation = orientation;
+        mOriItemWidth = BASE_ITEM_DEFAULT_SIZE;
+        mOriItemHeight = BASE_ITEM_DEFAULT_SIZE;
+        mNumRows = rowCount;
+        mItemsRect = new SparseArray<>();
+    }
 
     public ModuleLayoutManager(int rowCount, int orientation, int baseItemWidth, int baseItemHeight) {
         mOrientation = orientation;
@@ -127,7 +137,8 @@ public abstract class ModuleLayoutManager extends RecyclerView.LayoutManager imp
 
         //item view that slide out of the screen will return Recycle cache
         Rect childFrame = new Rect();
-        for (int i = 0; i < getChildCount(); i++) {
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
             childFrame.left = getDecoratedLeft(child);
             childFrame.top = getDecoratedTop(child);
@@ -178,6 +189,7 @@ public abstract class ModuleLayoutManager extends RecyclerView.LayoutManager imp
         int realOffset = dx;
         if (mHorizontalOffset + dx < 0) {
             realOffset -= mHorizontalOffset;
+
         } else if (mHorizontalOffset + dx > mTotalWidth - getHorizontalSpace()){
             realOffset = mTotalWidth - getHorizontalSpace() - mHorizontalOffset;
         }

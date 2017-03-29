@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
+import static android.view.KeyEvent.KEYCODE_DPAD_RIGHT;
+
 public class TvRecyclerView extends RecyclerView {
 
     public static final String TAG = "TvRecyclerView";
@@ -278,7 +280,7 @@ public class TvRecyclerView extends RecyclerView {
             try {
                 if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                     mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_LEFT);
-                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                } else if (keyCode == KEYCODE_DPAD_RIGHT) {
                     mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_RIGHT);
                 } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
                     mNextFocused = FocusFinder.getInstance().findNextFocus(this, mSelectedItem, View.FOCUS_UP);
@@ -304,7 +306,7 @@ public class TvRecyclerView extends RecyclerView {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
             case KeyEvent.KEYCODE_DPAD_UP:
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
+            case KEYCODE_DPAD_RIGHT:
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 if (processMoves(keyCode)) {
                     return true;
@@ -384,37 +386,12 @@ public class TvRecyclerView extends RecyclerView {
                 boolean isVisible = isVisibleChild(mNextFocused);
                 boolean isHalfVisible = isHalfVisibleChild(mNextFocused);
                 if (isHalfVisible || !isVisible) {
-                    if (keycode == KeyEvent.KEYCODE_DPAD_RIGHT && mOrientation == HORIZONTAL) {
-                        smoothScrollBy(getWidth() / 2, 0);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_LEFT && mOrientation == HORIZONTAL) {
-                        smoothScrollBy(-getWidth() / 2, 0);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_UP && mOrientation == VERTICAL) {
-                        smoothScrollBy(0, -getWidth() / 2);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN && mOrientation == VERTICAL) {
-                        smoothScrollBy(0, getWidth() / 2);
-                    }
+                    smoothScrollView(keycode);
                 }
             } else {
                 boolean isOver = isOverHalfScreen(mSelectedItem, keycode);
                 if (isOver) {
-                    int dx, dy;
-                    if (keycode == KeyEvent.KEYCODE_DPAD_RIGHT && mOrientation == HORIZONTAL) {
-                        dx = mNextFocused.getLeft() +
-                                mNextFocused.getWidth() / 2 - mScreenWidth / 2;
-                        smoothScrollBy(dx, 0);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_LEFT && mOrientation == HORIZONTAL) {
-                        dx = mNextFocused.getRight() -
-                                mNextFocused.getWidth() / 2 - mScreenWidth / 2;
-                        smoothScrollBy(dx, 0);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_UP && mOrientation == VERTICAL) {
-                        dy = mNextFocused.getBottom() -
-                                mNextFocused.getHeight() / 2 - mScreenHeight / 2;
-                        smoothScrollBy(0, dy);
-                    } else if (keycode == KeyEvent.KEYCODE_DPAD_DOWN && mOrientation == VERTICAL) {
-                        dy = mNextFocused.getTop() +
-                                mNextFocused.getHeight() / 2 - mScreenHeight / 2;
-                        smoothScrollBy(0, dy);
-                    }
+                    smoothScrollView(keycode);
                 }
             }
             if (mIsAutoProcessFocus) {
@@ -424,6 +401,46 @@ public class TvRecyclerView extends RecyclerView {
             }
             return true;
         }
+    }
+
+    private void smoothScrollView(int keycode) {
+        int scrollDistance = getScrollDistance(keycode);
+        if ((keycode == KEYCODE_DPAD_RIGHT || keycode == KeyEvent.KEYCODE_DPAD_LEFT)
+                && mOrientation == HORIZONTAL) {
+            smoothScrollBy(scrollDistance, 0);
+        } else if ((keycode == KeyEvent.KEYCODE_DPAD_UP || keycode == KeyEvent.KEYCODE_DPAD_DOWN)
+                && mOrientation == VERTICAL) {
+            smoothScrollBy(0, scrollDistance);
+        }
+    }
+
+    private int getScrollDistance(int keyCode) {
+        int distance = 0;
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                distance = mNextFocused.getLeft() +
+                        mNextFocused.getWidth() / 2 - mScreenWidth / 2;
+                break;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                if (mIsFollowScroll) {
+                    distance = mNextFocused.getRight()
+                            - mScreenWidth / 2 - mNextFocused.getWidth() / 2;
+                } else {
+                    distance = -mScreenWidth / 2;
+                }
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                distance = mNextFocused.getBottom() -
+                        mNextFocused.getHeight() / 2 - mScreenHeight / 2;
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                distance = mNextFocused.getTop() +
+                        mNextFocused.getHeight() / 2 - mScreenHeight / 2;
+                break;
+            default:
+                break;
+        }
+        return distance;
     }
 
     private boolean isHalfVisibleChild(View child) {
@@ -448,7 +465,7 @@ public class TvRecyclerView extends RecyclerView {
     private boolean isOverHalfScreen(View child, int keycode) {
         Rect ret = new Rect();
         boolean visibleRect = child.getGlobalVisibleRect(ret);
-        if (visibleRect && keycode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+        if (visibleRect && keycode == KEYCODE_DPAD_RIGHT) {
             if (ret.right > mScreenWidth / 2) {
                 return true;
             }
